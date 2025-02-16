@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover"
+    />
+    <title>
+      WebCalc | Instant Web-Based Calculator with Trigonometry & Memory
+      Functions
+    </title>
+    <meta
+      name="description"
+      content="Free web-based calculator with advanced functions including trigonometry (sin/cos/tan), memory operations (M+/M-/MR/MC), and percentage calculations. No installation required."
+    />
+
+    <!-- PWA Metadata -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#1a202c" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="#1a202c" />
+
+    <!-- Preconnect to External Resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+
+    <!-- Font Loading -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+
+    <!-- Font Awesome with Preload -->
+    <link
+      rel="preload"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css"
+      as="style"
+      integrity="sha512-Evv83kLJXqM6tqZJgSLvGvVvZJemkJxYpLk5k4B0l6f5f5Y5k4B0l6f5f5Y5k4B0l6f5f5Y5k4B0l6f5f5Y5k4=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css"
+      integrity="sha512-Evv83kLJXqM6tqZJgSLvGvVvZJemkJxYpLk5k4B0l6f5f5Y5k4B0l6f5f5Y5k4B0l6f5f5Y5k4B0l6f5f5Y5k4=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+      media="print"
+      onload="this.media='all'"
+    />
+
+    <!-- SEO Meta -->
+    <meta name="author" content="WebCalc Team" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="#" />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom Styles -->
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+      }
+      /* Dark gradient background for depth */
+      body.dark {
+        background: linear-gradient(to bottom right, #2d3748, #1a202c);
+      }
+      body.light {
+        background: linear-gradient(to bottom right, #e2e8f0, #edf2f7);
+      }
+      /* Dark glass effect with 85% opacity */
+      .glass {
+        backdrop-filter: blur(8px) saturate(150%);
+        -webkit-backdrop-filter: blur(8px) saturate(150%);
+        background-color: rgba(20, 20, 20, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      /* Light glass effect with 85% opacity */
+      .light-glass {
+        backdrop-filter: blur(8px) saturate(150%);
+        -webkit-backdrop-filter: blur(8px) saturate(150%);
+        background-color: rgba(255, 255, 255, 0.85);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+      }
+      /* Tooltip styling */
+      .tooltip {
+        position: relative;
+        display: inline-block;
+      }
+      .tooltip .tooltiptext {
+        visibility: hidden;
+        width: 80px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px 0;
+        position: absolute;
+        z-index: 10;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -40px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 0.75rem;
+      }
+      .tooltip:hover .tooltiptext {
+        visibility: visible;
+        opacity: 1;
+      }
+      /* Inline help link style */
+      .help-link {
+        color: #60a5fa;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body class="dark min-h-screen flex items-center justify-center">
+    <!-- Calculator Container -->
+    <div
+      id="calcContainer"
+      class="relative glass rounded-2xl shadow-2xl w-full max-w-[500px] p-6 mx-4 text-white"
+    >
+      <!-- macOS Title Bar -->
+      <div
+        class="absolute top-3 left-3 flex items-center space-x-2"
+        title="Window Controls"
+      >
+        <div class="w-3 h-3 bg-red-500 rounded-full shadow-md"></div>
+        <div class="w-3 h-3 bg-yellow-500 rounded-full shadow-md"></div>
+        <div class="w-3 h-3 bg-green-500 rounded-full shadow-md"></div>
+      </div>
+
+      <!-- History & Help Buttons with Tooltips -->
+      <div class="absolute top-3 right-14 tooltip">
+        <button
+          onclick="toggleHistory()"
+          class="bg-blue-600 hover:bg-blue-700 active:scale-95 transform transition rounded-full px-3 h-8 flex items-center justify-center shadow-md text-sm"
+          title="History (H)"
+        >
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </button>
+        <span class="tooltiptext">History (H)</span>
+      </div>
+      <div class="absolute top-3 right-4 tooltip">
+        <button
+          onclick="toggleHelp()"
+          class="bg-blue-600 hover:bg-blue-700 active:scale-95 transform transition rounded-full w-8 h-8 flex items-center justify-center shadow-md"
+          title="Help (W)"
+        >
+          <i class="fa-solid fa-question"></i>
+        </button>
+        <span class="tooltiptext">Help (W)</span>
+      </div>
+
+      <!-- Display Panel -->
+      <div class="mt-10 mb-4">
+        <input
+          type="text"
+          id="expressionDisplay"
+          class="w-full text-right text-sm mb-1 bg-transparent outline-none text-current"
+          placeholder="Type expression..."
+          oninput="updateExpressionFromInput()"
+        />
+        <input
+          type="text"
+          id="currentDisplay"
+          class="w-full text-right text-4xl font-semibold bg-transparent outline-none transition-colors duration-300 text-current"
+          readonly
+          value="0"
+        />
+      </div>
+
+      <!-- Memory Display -->
+      <div id="memoryDisplay" class="text-xs mb-2 text-right"></div>
+
+      <!-- Row 1: Memory Keys -->
+      <div class="grid grid-cols-4 gap-3">
+        <button
+          onclick="handleMemory('M+')"
+          class="bg-indigo-700 hover:bg-indigo-800 active:scale-95 transform transition rounded-lg p-2 text-sm shadow"
+        >
+          M+
+        </button>
+        <button
+          onclick="handleMemory('M-')"
+          class="bg-indigo-700 hover:bg-indigo-800 active:scale-95 transform transition rounded-lg p-2 text-sm shadow"
+        >
+          M-
+        </button>
+        <button
+          onclick="handleMemory('MR')"
+          class="bg-indigo-700 hover:bg-indigo-800 active:scale-95 transform transition rounded-lg p-2 text-sm shadow"
+        >
+          MR
+        </button>
+        <button
+          onclick="handleMemory('MC')"
+          class="bg-indigo-700 hover:bg-indigo-800 active:scale-95 transform transition rounded-lg p-2 text-sm shadow"
+        >
+          MC
+        </button>
+      </div>
+
+      <!-- Row 2: Scientific Functions (Toggleable) -->
+      <div id="sciRow" class="grid grid-cols-4 gap-3 mt-3"></div>
+
+      <!-- Row 3: Basic Operations -->
+      <div class="grid grid-cols-4 gap-3 mt-3">
+        <button
+          onclick="clearAll()"
+          class="bg-red-600 hover:bg-red-700 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          AC
+        </button>
+        <button
+          onclick="toggleSign()"
+          class="bg-gray-700 hover:bg-gray-800 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          ±
+        </button>
+        <button
+          onclick="calculatePercent()"
+          class="bg-gray-700 hover:bg-gray-800 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          %
+        </button>
+        <button
+          onclick="handleOperator('/')"
+          class="bg-orange-600 hover:bg-orange-700 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          ÷
+        </button>
+      </div>
+
+      <!-- Row 4: Numbers Row 1 -->
+      <div class="grid grid-cols-4 gap-3 mt-3">
+        <button
+          onclick="appendNumber('7')"
+          class="bg-gray-800 hover:bg-gray-700 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          7
+        </button>
+        <button
+          onclick="appendNumber('8')"
+          class="bg-gray-800 hover:bg-gray-700 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          8
+        </button>
+        <button
+          onclick="appendNumber('9')"
+          class="bg-gray-800 hover:bg-gray-700 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          9
+        </button>
+        <button
+          onclick="handleOperator('*')"
+          class="bg-orange-600 hover:bg-orange-700 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          ×
+        </button>
+      </div>
+
+      <!-- Row 5: Numbers Row 2 -->
+      <div class="grid grid-cols-4 gap-3 mt-3">
+        <button
+          onclick="appendNumber('4')"
+          class="bg-gray-800 hover:bg-gray-700 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          4
+        </button>
+        <button
+          onclick="appendNumber('5')"
+          class="bg-gray-800 hover:bg-gray-700 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          5
+        </button>
+        <button
+          onclick="appendNumber('6')"
+          class="bg-gray-800 hover:bg-gray-700 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          6
+        </button>
+        <button
+          onclick="handleOperator('-')"
+          class="bg-orange-600 hover:bg-orange-700 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          −
+        </button>
+      </div>
+
+      <!-- Row 6: Numbers Row 3 -->
+      <div class="grid grid-cols-4 gap-3 mt-3">
+        <button
+          onclick="appendNumber('1')"
+          class="bg-gray-800 hover:bg-gray-700 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          1
+        </button>
+        <button
+          onclick="appendNumber('2')"
+          class="bg-gray-800 hover:bg-gray-700 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          2
+        </button>
+        <button
+          onclick="appendNumber('3')"
+          class="bg-gray-800 hover:bg-gray-700 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          3
+        </button>
+        <button
+          onclick="handleOperator('+')"
+          class="bg-orange-600 hover:bg-orange-700 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          +
+        </button>
+      </div>
+
+      <!-- Row 7: Parentheses & Backspace Row -->
+      <div class="grid grid-cols-4 gap-3 mt-3">
+        <!-- Custom Parenthesis Toggle Button -->
+        <button
+          id="toggleParenBtn"
+          onclick="toggleParenthesis()"
+          class="bg-gray-700 hover:bg-gray-800 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          <!-- This inner HTML will be updated dynamically -->
+        </button>
+        <button
+          onclick="appendNumber('0')"
+          class="bg-gray-800 hover:bg-gray-700 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          0
+        </button>
+        <button
+          onclick="appendNumber('.')"
+          class="bg-gray-800 hover:bg-gray-700 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          .
+        </button>
+        <!-- Backspace Button -->
+        <button
+          onclick="backspace()"
+          class="bg-gray-700 hover:bg-gray-800 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          <i class="fa-solid fa-delete-left"></i>
+        </button>
+      </div>
+
+      <!-- Row 8: Bottom Row (Sci Tab Indicator, "00", Equals) -->
+      <div class="grid grid-cols-4 gap-3 mt-3">
+        <button
+          id="toggleSciBtn"
+          onclick="toggleSciSet()"
+          class="bg-gray-700 hover:bg-gray-800 active:scale-95 transform transition rounded-lg p-3 text-sm font-medium shadow"
+        >
+          <span id="sciLabel"></span>
+        </button>
+        <button
+          onclick="appendNumber('00')"
+          class="bg-gray-800 hover:bg-gray-700 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          00
+        </button>
+        <button
+          onclick="calculate()"
+          class="col-span-2 bg-blue-600 hover:bg-blue-700 active:scale-95 transform transition rounded-lg p-3 text-lg font-medium shadow"
+        >
+          =
+        </button>
+      </div>
+
+      <!-- Shortcuts Legend -->
+      <div class="mt-4 text-center text-xs opacity-60">
+        H for History | W for Help | T for Theme
+      </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div
+      id="helpModal"
+      class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50"
+    >
+      <div
+        id="helpModalContent"
+        class="glass rounded-lg shadow-xl p-6 max-w-md mx-4 w-full text-white transition-all"
+      >
+        <h2 class="text-2xl font-bold mb-4">Calculator Help</h2>
+        <p class="mb-2"><strong>Advanced Operations:</strong></p>
+        <ul class="list-disc list-inside mb-2">
+          <li>
+            Use <em>sin, cos, tan</em> (angles in degrees) and <em>√</em> for
+            square root.
+          </li>
+          <li>
+            Use <em>log</em> (base‑10) and <em>ln</em> (natural) for logarithms.
+          </li>
+          <li>
+            Use <em>^</em> for exponentiation and <em>mod</em> for modulo.
+          </li>
+          <li>
+            In Tab 3, use <em>x!</em> for factorial, <em>abs</em>,
+            <em>floor</em>, and <em>ceil</em>.
+          </li>
+        </ul>
+        <p class="mb-2">
+          <strong>Memory Functions:</strong> Use the Memory buttons (<span
+            class="help-link"
+            onclick="toggleMemoryHelp()"
+            >M+, M-, MR, MC</span
+          >) to store and recall values.
+        </p>
+        <p class="mb-2">
+          Use basic operators (+, −, ×, ÷) and parentheses for grouping.
+        </p>
+        <p class="mb-2">
+          Keyboard Shortcuts: Press <strong>H</strong> for History,
+          <strong>W</strong> for Help, and <strong>T</strong> to toggle the
+          theme.
+        </p>
+        <button
+          onclick="toggleHelp()"
+          class="mt-4 bg-blue-600 hover:bg-blue-700 active:scale-95 transform transition rounded-lg px-4 py-2 focus:outline-none"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+
+    <!-- Memory Help Modal -->
+    <div
+      id="memoryHelpModal"
+      class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50"
+    >
+      <div
+        id="memoryHelpModalContent"
+        class="glass rounded-lg shadow-xl p-6 max-w-md mx-4 w-full text-white transition-all"
+      >
+        <h2 class="text-2xl font-bold mb-4">Memory Functions Help</h2>
+        <p class="mb-2">
+          Memory functions let you store a number for later use:
+        </p>
+        <ul class="list-disc list-inside mb-2">
+          <li><strong>M+</strong>: Adds the current value to memory.</li>
+          <li><strong>M-</strong>: Subtracts the current value from memory.</li>
+          <li><strong>MR</strong>: Recalls the stored value.</li>
+          <li><strong>MC</strong>: Clears the memory.</li>
+        </ul>
+        <p class="mb-2">
+          They are useful for multi‑step calculations without losing
+          intermediate results.
+        </p>
+        <button
+          onclick="toggleMemoryHelp()"
+          class="mt-4 bg-blue-600 hover:bg-blue-700 active:scale-95 transform transition rounded-lg px-4 py-2 focus:outline-none"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+
+    <!-- History Modal -->
+    <div
+      id="historyModal"
+      class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50"
+    >
+      <div
+        id="historyModalContent"
+        class="glass rounded-lg shadow-xl p-6 max-w-md mx-4 w-full text-white transition-all"
+      >
+        <h2 class="text-2xl font-bold mb-4">Calculation History</h2>
+        <div
+          id="historyContent"
+          class="max-h-80 overflow-y-auto space-y-2"
+        ></div>
+        <button
+          onclick="toggleHistory()"
+          class="mt-4 bg-blue-600 hover:bg-blue-700 active:scale-95 transform transition rounded-lg px-4 py-2 focus:outline-none"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+      let expression = "";
+      let currentInput = "0";
+      let calculationHistory = [];
+      let memoryValue = null;
+      let isDark = true; // default theme: dark
+      let currentSciTab = 0;
+      const totalSciTabs = 3;
+
+      // Retrieve history from localStorage on load
+      const storedHistory = localStorage.getItem("calcHistory");
+      if (storedHistory) {
+        calculationHistory = JSON.parse(storedHistory);
+      }
+
+      // Update localStorage
+      function updateLocalStorage() {
+        localStorage.setItem("calcHistory", JSON.stringify(calculationHistory));
+      }
+
+      // Update display and then update the parenthesis button
+      function updateDisplay() {
+        document.getElementById("expressionDisplay").value = expression;
+        document.getElementById("currentDisplay").value = currentInput;
+        updateMemoryDisplay();
+        updateParenthesisButton();
+      }
+
+      function updateExpressionFromInput() {
+        expression = document.getElementById("expressionDisplay").value;
+        updateParenthesisButton();
+      }
+
+      function updateMemoryDisplay() {
+        const memoryDisplay = document.getElementById("memoryDisplay");
+        memoryDisplay.textContent =
+          memoryValue !== null ? "M: " + memoryValue : "";
+      }
+
+      // Update the scientific row based on currentSciTab
+      function updateSciRow() {
+        const sciRow = document.getElementById("sciRow");
+        if (currentSciTab === 0) {
+          sciRow.innerHTML = `
+            <button onclick="handleFunction('sin')" class="bg-gray-700 hover:bg-gray-800 active:scale-95 transform transition rounded-lg p-3 text-sm font-medium shadow">sin</button>
+            <button onclick="handleFunction('cos')" class="bg-gray-700 hover:bg-gray-800 active:scale-95 transform transition rounded-lg p-3 text-sm font-medium shadow">cos</button>
+            <button onclick="handleFunction('tan')" class="bg-gray-700 hover:bg-gray-800 active:scale-95 transform transition rounded-lg p-3 text-sm font-medium shadow">tan</button>
+            <button onclick="handleFunction('sqrt')" class="bg-gray-700 hover:bg-gray-800 active:scale-95 transform transition rounded-lg p-3 text-sm font-medium shadow">√</button>
+          `;
+        } else if (currentSciTab === 1) {
+          sciRow.innerHTML = `
+            <button onclick="handleFunction('log')" class="bg-gray-700 hover:bg-gray-800 active:scale-95 transform transition rounded-lg p-3 text-sm font-medium shadow">log</button>
+            <button onclick="handleFunction('ln')" class="bg-gray-700 hover:bg-gray-800 active:scale-95 transform transition rounded-lg p-3 text-sm font-medium shadow">ln</button>
+            <button onclick="handleOperator('^')" class="bg-gray-700 hover:bg-gray-800 active:scale-95 transform transition rounded-lg p-3 text-sm font-medium shadow">^</button>
+            <button onclick="handleOperator('mod')" class="bg-gray-700 hover:bg-gray-800 active:scale-95 transform transition rounded-lg p-3 text-sm font-medium shadow">mod</button>
+          `;
+        } else if (currentSciTab === 2) {
+          sciRow.innerHTML = `
+            <button onclick="handleFunction('fact')" class="bg-gray-700 hover:bg-gray-800 active:scale-95 transform transition rounded-lg p-3 text-sm font-medium shadow">x!</button>
+            <button onclick="handleFunction('abs')" class="bg-gray-700 hover:bg-gray-800 active:scale-95 transform transition rounded-lg p-3 text-sm font-medium shadow">abs</button>
+            <button onclick="handleFunction('floor')" class="bg-gray-700 hover:bg-gray-800 active:scale-95 transform transition rounded-lg p-3 text-sm font-medium shadow">floor</button>
+            <button onclick="handleFunction('ceil')" class="bg-gray-700 hover:bg-gray-800 active:scale-95 transform transition rounded-lg p-3 text-sm font-medium shadow">ceil</button>
+          `;
+        }
+        document.getElementById("toggleSciBtn").innerText =
+          currentSciTab + 1 + "/" + totalSciTabs;
+      }
+
+      function toggleSciSet() {
+        currentSciTab = (currentSciTab + 1) % totalSciTabs;
+        updateSciRow();
+      }
+
+      // Update history display
+      function updateHistoryDisplay() {
+        const historyContent = document.getElementById("historyContent");
+        const displayHistory = calculationHistory.slice(0, 10);
+        historyContent.innerHTML = displayHistory
+          .map((calc) => {
+            return `<div class="p-2 border border-gray-600 rounded hover:bg-gray-700 cursor-pointer" onclick="useHistoryItem('${encodeURIComponent(
+              calc.expression
+            )}','${encodeURIComponent(calc.result)}')">
+                      <div class="text-xs text-gray-300">${calc.timestamp}</div>
+                      <div class="text-sm">${calc.expression} = ${
+              calc.result
+            }</div>
+                    </div>`;
+          })
+          .join("");
+      }
+
+      function useHistoryItem(encodedExpr, encodedRes) {
+        const expr = decodeURIComponent(encodedExpr);
+        const res = decodeURIComponent(encodedRes);
+        expression = expr;
+        currentInput = res;
+        document.getElementById("expressionDisplay").value = expr;
+        updateDisplay();
+        toggleHistory();
+      }
+
+      // Append a digit or decimal
+      function appendNumber(num) {
+        if (currentInput === "Error") {
+          currentInput = "0";
+          expression = "";
+        }
+        if (num === "." && currentInput.includes(".")) return;
+        if (currentInput === "0" && num !== ".") {
+          currentInput = num;
+        } else {
+          currentInput += num;
+        }
+        updateDisplay();
+      }
+
+      // Handle operators and parentheses
+      function handleOperator(operator) {
+        if (currentInput === "Error") return;
+        if (operator === "mod") {
+          operator = "%";
+        }
+        if (operator === "^") {
+          operator = "**";
+        }
+        if (operator === "(") {
+          expression += "(";
+          updateDisplay();
+          currentInput = "0";
+          return;
+        }
+        if (
+          currentInput === "" &&
+          expression !== "" &&
+          /[+\-*/%]$/.test(expression)
+        ) {
+          expression = expression.slice(0, -1) + operator;
+        } else {
+          expression += currentInput + operator;
+          currentInput = "";
+        }
+        updateDisplay();
+      }
+
+      // Toggle parenthesis button behavior:
+      function toggleParenthesis() {
+        // Count unmatched "(" and ")" in expression
+        let openCount = (expression.match(/\(/g) || []).length;
+        let closeCount = (expression.match(/\)/g) || []).length;
+        if (openCount > closeCount) {
+          // There is an unmatched "("; if there's a current input (non-default), append it then add ")"
+          if (currentInput !== "0") {
+            expression += currentInput;
+            currentInput = "";
+          }
+          expression += ")";
+        } else {
+          // Otherwise, insert "("
+          expression += "(";
+        }
+        updateDisplay();
+      }
+
+      // Update the parenthesis button appearance
+      function updateParenthesisButton() {
+        let openCount = (expression.match(/\(/g) || []).length;
+        let closeCount = (expression.match(/\)/g) || []).length;
+        let btn = document.getElementById("toggleParenBtn");
+        if (openCount > closeCount) {
+          // Next expected is closing, so show inactive "(" and active ")"
+          btn.innerHTML = `<span class="text-sm opacity-60">(</span> <span class="text-lg opacity-100">)</span>`;
+        } else {
+          // Next expected is opening, so show active "(" and inactive ")"
+          btn.innerHTML = `<span class="text-lg opacity-100">(</span> <span class="text-sm opacity-60">)</span>`;
+        }
+      }
+
+      // Backspace function
+      function backspace() {
+        if (currentInput === "Error") {
+          currentInput = "0";
+          expression = "";
+          updateDisplay();
+          return;
+        }
+        currentInput = currentInput.slice(0, -1);
+        if (currentInput === "" || currentInput === "-") {
+          currentInput = "0";
+        }
+        updateDisplay();
+      }
+
+      // Handle advanced functions
+      function handleFunction(func) {
+        if (currentInput === "Error") return;
+        let num = parseFloat(currentInput);
+        if (isNaN(num)) return;
+        let result;
+        switch (func) {
+          case "sqrt":
+            if (num < 0) {
+              currentInput = "Error";
+              updateDisplay();
+              return;
+            }
+            result = Math.sqrt(num);
+            break;
+          case "sin":
+            result = Math.sin((num * Math.PI) / 180);
+            break;
+          case "cos":
+            result = Math.cos((num * Math.PI) / 180);
+            break;
+          case "tan":
+            result = Math.tan((num * Math.PI) / 180);
+            break;
+          case "log":
+            if (num <= 0) {
+              currentInput = "Error";
+              updateDisplay();
+              return;
+            }
+            result = Math.log10(num);
+            break;
+          case "ln":
+            if (num <= 0) {
+              currentInput = "Error";
+              updateDisplay();
+              return;
+            }
+            result = Math.log(num);
+            break;
+          case "abs":
+            result = Math.abs(num);
+            break;
+          case "floor":
+            result = Math.floor(num);
+            break;
+          case "ceil":
+            result = Math.ceil(num);
+            break;
+          case "fact":
+            if (num < 0 || !Number.isInteger(num)) {
+              currentInput = "Error";
+              updateDisplay();
+              return;
+            }
+            result = factorial(num);
+            break;
+          default:
+            return;
+        }
+        currentInput = result.toString();
+        updateDisplay();
+      }
+
+      // Factorial helper
+      function factorial(n) {
+        if (n === 0 || n === 1) return 1;
+        let res = 1;
+        for (let i = 2; i <= n; i++) {
+          res *= i;
+        }
+        return res;
+      }
+
+      // Calculate percentage
+      function calculatePercent() {
+        if (currentInput === "Error") return;
+        let num = parseFloat(currentInput);
+        if (!isNaN(num)) {
+          currentInput = (num / 100).toString();
+          updateDisplay();
+        }
+      }
+
+      // Perform calculation
+      function calculate() {
+        if (currentInput === "Error") return;
+        let exp = expression + currentInput;
+        try {
+          exp = exp
+            .replace(/sin/g, "Math.sin")
+            .replace(/cos/g, "Math.cos")
+            .replace(/tan/g, "Math.tan")
+            .replace(/sqrt/g, "Math.sqrt");
+          let result = eval(exp);
+          if (!isFinite(result)) throw new Error("Result not finite");
+          const historyItem = {
+            expression: exp,
+            result: result.toString(),
+            timestamp: new Date().toLocaleString(),
+          };
+          calculationHistory.unshift(historyItem);
+          updateHistoryDisplay();
+          updateLocalStorage();
+          currentInput = result.toString();
+          expression = "";
+        } catch (error) {
+          currentInput = "Error";
+          expression = "";
+        }
+        updateDisplay();
+      }
+
+      // Clear all
+      function clearAll() {
+        expression = "";
+        currentInput = "0";
+        updateDisplay();
+      }
+
+      // Toggle sign
+      function toggleSign() {
+        if (currentInput === "Error") return;
+        if (currentInput.startsWith("-")) {
+          currentInput = currentInput.slice(1);
+        } else if (currentInput !== "0") {
+          currentInput = "-" + currentInput;
+        }
+        updateDisplay();
+      }
+
+      // Memory functions
+      function handleMemory(action) {
+        const currentValue = parseFloat(currentInput);
+        switch (action) {
+          case "M+":
+            memoryValue = (memoryValue || 0) + currentValue;
+            break;
+          case "M-":
+            memoryValue = (memoryValue || 0) - currentValue;
+            break;
+          case "MR":
+            if (memoryValue !== null) {
+              currentInput = memoryValue.toString();
+              updateDisplay();
+            }
+            break;
+          case "MC":
+            memoryValue = null;
+            break;
+        }
+        updateMemoryDisplay();
+      }
+
+      // Toggle modals
+      function toggleHelp() {
+        document.getElementById("helpModal").classList.toggle("hidden");
+      }
+      function toggleHistory() {
+        document.getElementById("historyModal").classList.toggle("hidden");
+      }
+      function toggleMemoryHelp() {
+        document.getElementById("memoryHelpModal").classList.toggle("hidden");
+      }
+
+      // Theme toggle: Press T to toggle themes
+      function toggleTheme() {
+        isDark = !isDark;
+        const bodyEl = document.body;
+        const calcContainer = document.getElementById("calcContainer");
+        if (isDark) {
+          bodyEl.className =
+            "dark bg-gradient-to-br from-gray-800 to-gray-900 min-h-screen flex items-center justify-center";
+          calcContainer.className =
+            "relative glass rounded-2xl shadow-2xl w-full max-w-[500px] p-6 mx-4 text-white";
+        } else {
+          bodyEl.className =
+            "light bg-gradient-to-br from-gray-200 to-white min-h-screen flex items-center justify-center";
+          calcContainer.className =
+            "relative light-glass rounded-2xl shadow-2xl w-full max-w-[500px] p-6 mx-4 text-black";
+        }
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener("keydown", (event) => {
+        if (document.activeElement.id !== "expressionDisplay") {
+          if (event.key.toLowerCase() === "h") {
+            toggleHistory();
+            return;
+          }
+          if (event.key.toLowerCase() === "w") {
+            toggleHelp();
+            return;
+          }
+          if (event.key.toLowerCase() === "t") {
+            toggleTheme();
+            return;
+          }
+        }
+        if (
+          event.key.match(/[0-9\.\+\-\*\/\(\)=]|Enter|Backspace|Escape/) &&
+          !event.metaKey &&
+          !event.ctrlKey
+        ) {
+          event.preventDefault();
+        }
+        const key = event.key;
+        if (!isNaN(key) || key === ".") {
+          appendNumber(key);
+        } else if (["+", "-", "*", "/", "^"].includes(key)) {
+          handleOperator(key);
+        } else if (key === "(") {
+          handleOperator("(");
+        } else if (key === ")") {
+          // For ")" key, use toggleParenthesis() logic
+          toggleParenthesis();
+        } else if (key === "Enter" || key === "=") {
+          calculate();
+        } else if (key === "Escape") {
+          clearAll();
+        } else if (key === "Backspace") {
+          backspace();
+        }
+      });
+
+      // Initialize on load
+      updateSciRow();
+      updateDisplay();
+      updateHistoryDisplay();
+
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("sw.js").then(
+            function (registration) {
+              console.log(
+                "Service Worker registered with scope:",
+                registration.scope
+              );
+            },
+            function (err) {
+              console.log("Service Worker registration failed:", err);
+            }
+          );
+        });
+      }
+    </script>
+  </body>
+</html>
